@@ -1,5 +1,11 @@
 # PyScheduler
 
+
+
+[中文文档](./README.md)
+
+
+
 ## 1. Project Purpose
 
 This project is a Python and Flask-based task scheduler designed to manage and execute scheduled tasks. Through this project, users can easily view the task list, manually trigger tasks, check task history, and more.
