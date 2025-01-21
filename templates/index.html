@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务调度器</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-4">任务调度器</h1>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>名称</th>
+            <th>下次运行时间</th>
+            <th>触发器</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for job in jobs %}
+        <tr>
+            <td>{{ job.id }}</td>
+            <td><a href="{{ url_for('history', job_id=job.id) }}" class="btn btn-light">{{ job.name }}</a></td>
+            <td>{{ job.next_run_time.strftime('%Y-%m-%d %H:%M:%S') if job.next_run_time else 'N/A' }}</td>
+            <td><span class="badge badge-secondary">{{ job.trigger }}</span></td>
+            <td>
+                <button type="submit" class="btn btn-primary" onclick="confirmTrigger('{{ job.id }}')">运行</button>
+                <button type="button" class="btn btn-success"
+                        data-job-id="{{ job.id }}"
+                        data-kwargs='{{ job.kwargs | tojson | safe }}'
+                        onclick="showParamModal(this)">
+                    带参数运行
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="paramModal" tabindex="-1" aria-labelledby="paramModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paramModalLabel"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <label for="param">参数：</label>
+                <input type="text" class="form-control" id="param" placeholder="格式：xxx=1&yyy=2">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="runWithParam()">运行</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/jquery.slim.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+<script>
+    function confirmTrigger(jobId) {
+        if (confirm(`确定现在执行任务 ${jobId} 吗？`)) {
+            fetch(`/trigger/${jobId}`, {method: "POST"})
+                .then((response) => {
+                    if (response.ok) {
+                        alert(`任务 ${jobId} 已成功注册，正在后台执行中...`);
+                    } else {
+                        alert(`请求失败: ${response.status}`);
+                    }
+                })
+                .catch((error) => {
+                    alert("请求出错:", error);
+                });
+        }
+    }
+
+    function showParamModal(button) {
+        const jobId = button.dataset.jobId;
+        const kwargs = JSON.parse(button.dataset.kwargs);
+        $('#paramModalLabel').text(jobId);
+        // 清空模态框内容
+        const modalBody = document.getElementById('modalBody');
+        modalBody.innerHTML = '';
+
+        // 遍历 kwargs 对象，动态添加 label 和 input
+        for (const [key, value] of Object.entries(kwargs)) {
+            // 创建 label 元素
+            const label = document.createElement('label');
+            label.textContent = key.replace(/_/g, ' '); // 将下划线替换为空格
+            label.setAttribute('for', key);
+            label.classList.add('form-label');
+
+            // 创建 input 元素
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.id = key;
+            input.name = key;
+            input.value = value || ''; // 设置默认值
+            input.classList.add('form-control', 'mb-3');
+
+            // 将 label 和 input 添加到 modalBody 中
+            modalBody.appendChild(label);
+            modalBody.appendChild(input);
+        }
+
+        $('#paramModal').modal('show');
+    }
+
+    function runWithParam() {
+        const jobId = $('#paramModalLabel').text();
+        // 获取用户输入的值
+        const inputs = document.querySelectorAll('#modalBody input');
+        let params = '';
+
+        inputs.forEach(input => {
+            params += `&${input.name}=${encodeURIComponent(input.value)}`;
+        });
+        params = params.slice(1);
+        // 发送 POST 请求
+        fetch(`/trigger/${jobId}?${params}`, {method: "POST"})
+            .then((response) => {
+                if (response.ok) {
+                    alert(`任务 ${jobId} 已成功注册，正在后台执行中...`);
+                    $('#paramModal').modal('hide');
+                } else {
+                    alert(`请求失败: ${response.status}`);
+                }
+            })
+            .catch((error) => {
+                alert("请求出错:", error);
+            });
+    }
+</script>
+</body>
+</html>

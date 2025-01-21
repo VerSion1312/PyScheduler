@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务记录 - {{ job_id }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h1 class="mt-4">任务记录 - {{ job_id }}</h1>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary"
+       style="float: right; margin-bottom: 15px;">返回任务列表</a>
+    <button class="btn btn-primary" onclick="refreshHistory()"
+            style="float: right; margin-bottom: 15px; margin-right: 10px;">刷新
+    </button>
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>任务ID</th>
+            <th>状态</th>
+            <th>时间戳</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for entry in history %}
+        <tr>
+            <td>{{ entry.job_id }}</td>
+            <td>
+                <span title="{{entry.status}}"
+                      style="cursor: pointer;"
+                      onclick="copyToClipboard('{{ entry.status}}')"
+                      class="{{'badge badge-success' if entry.status == '已完成' else 'badge badge-danger'}}">
+                {{ entry.status if entry.status == '已完成' else '执行异常' }}
+                </span>
+            </td>
+            <td>{{ entry.timestamp }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script src="{{ url_for('static', filename='js/jquery.slim.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+<script>
+    function refreshHistory() {
+        fetch(`/history/${encodeURIComponent('{{ job_id }}')}`)
+            .then(response => response.text())
+            .then(html => {
+                document.open();
+                document.write(html);
+                document.close();
+            });
+    }
+
+    function copyToClipboard(text) {
+        // 创建一个临时的 textarea 元素
+        const tempTextArea = document.createElement('textarea');
+        tempTextArea.value = text;
+        document.body.appendChild(tempTextArea);
+
+        // 选择文本并执行复制命令
+        tempTextArea.select();
+        tempTextArea.setSelectionRange(0, 99999); // 兼容移动设备
+        try {
+            const successful = document.execCommand('copy')
+            if (successful) {
+                alert('以下文本已复制到剪贴板：' + text)
+            } else {
+                alert('复制到剪贴板失败！')
+            }
+        } catch (err) {
+            alert('复制到剪贴板失败！' + err)
+        }
+
+        // 移除临时的 textarea 元素
+        document.body.removeChild(tempTextArea)
+    }
+</script>
+</body>
+</html>
