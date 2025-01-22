@@ -41,8 +41,11 @@ def trigger_job(job_id):
 
     job = scheduler.get_job(job_id)
     if job:
-        # 将参数传递给job的kwargs
-        job.kwargs.update(params)
+        if params:
+            # 将参数传递给job的kwargs
+            job.kwargs.update(params)
+        else:
+            job.kwargs = {}
         job.modify(next_run_time=datetime.now())
         return jsonify({'status': 'success', 'message': f'任务 {job_id} 已成功注册，正在执行...'})
     else:
