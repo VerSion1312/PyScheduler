@@ -4,7 +4,11 @@
 
 [English Document](./README-en.md)
 
+运行截图
 
+![1737515604907.png](https://version-pic-bed.oss-cn-hangzhou.aliyuncs.com/images/1737515604907.png)
+
+![1737515634146.png](https://version-pic-bed.oss-cn-hangzhou.aliyuncs.com/images/1737515634146.png)
 
 ## 一、项目用途
 
@@ -365,6 +369,19 @@ cd /opt/PyScheduler
 ```bash
 sudo pip3 install -r requirements.txt
 ```
+
+> 在安装依赖中的`psycopg2`包时可能会出现异常，这是因为psycopg2包需要有PostgreSQL 的开发包，可以通过以下两个方法来解决该问题：
+>
+> 1. 使用以下命令安装PostgreSQL 的开发包。
+>
+>    ```bash
+>    sudo yum install postgresql-devel
+>    ```
+>
+> 2. 如果实际业务场景用不到PostgreSQL，那么可以移除项目依赖中的psycopg2和pgsql_utils。具体操作为：
+>
+>    - 删除`requirements.txt`中的`psycopg2~=2.9.10`
+>    - 删除`/datasource/pgsql_utils.py`文件
 
 ### 4. 创建systemd服务
 

@@ -4,6 +4,11 @@
 
 [中文文档](./README.md)
 
+ScreenShots
+
+![1737515604907.png](https://version-pic-bed.oss-cn-hangzhou.aliyuncs.com/images/1737515604907.png)
+
+![1737515634146.png](https://version-pic-bed.oss-cn-hangzhou.aliyuncs.com/images/1737515634146.png)
 
 
 ## 1. Project Purpose
@@ -347,6 +352,19 @@ To ensure the project runs smoothly, install all required dependencies. The proj
 ```bash
 sudo pip3 install -r requirements.txt
 ```
+
+> When installing the `psycopg2` package from the dependencies, you may encounter exceptions. This is because the psycopg2 package requires the PostgreSQL development package. You can resolve this issue using the following two methods:
+>
+> 1. Install the PostgreSQL development package using the following command:
+>
+>    ```bash
+>    sudo yum install postgresql-devel
+>    ```
+>
+> 2. If PostgreSQL is not required in your actual business scenario, you can remove psycopg2 and pgsql_utils from the project dependencies. The specific steps are as follows:
+>
+>    - Delete `psycopg2~=2.9.10` from `requirements.txt`.
+>    - Delete the `/datasource/pgsql_utils.py` file.
 
 ### 4. Create systemd Service
 
